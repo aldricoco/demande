@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Une question importante</title>
+<style>
+  :root {
+    --paper: #FBF3E7;
+    --paper-deep: #EEDFC5;
+    --ink: #2B1B1F;
+    --ink-soft: #7A5C58;
+    --burgundy: #8C1F3B;
+    --burgundy-dark: #5E1428;
+    --gold: #B4893F;
+    --rose: #D98A97;
+    --rose-dark: #B65E6E;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Cascadia Code', Consolas, 'SFMono-Regular', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper-deep);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(140,31,59,0.05), transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(180,137,63,0.08), transparent 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: var(--ink);
+  }
+
+  .hearts-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .mini-heart {
+    position: absolute;
+    bottom: -6%;
+    width: 12px;
+    height: 12px;
+    transform: rotate(-45deg);
+    opacity: 0.28;
+    animation: float-up linear infinite;
+  }
+  .mini-heart::before, .mini-heart::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: inherit;
+    border-radius: 50%;
+  }
+  .mini-heart::before { top: -6px; left: 0; }
+  .mini-heart::after { top: 0; left: 6px; }
+
+  @keyframes float-up {
+    to { transform: translateY(-115vh) rotate(-45deg); opacity: 0; }
+  }
+
+  .stage { position: relative; z-index: 1; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid rgba(140,31,59,0.14);
+    border-radius: 4px;
+    box-shadow: 0 1px 0 var(--paper-deep), 0 24px 55px rgba(43,27,31,0.22);
+    padding: 52px 46px 44px;
+    text-align: center;
+    max-width: 90vw;
+    width: 500px;
+    animation: settle 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+
+  @keyframes settle {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .seal {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--burgundy) 0%, var(--burgundy-dark) 75%);
+    margin: 0 auto 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(94,20,40,0.35);
+  }
+
+  .seal-heart {
+    width: 12px;
+    height: 12px;
+    background: var(--gold);
+    transform: rotate(-45deg);
+    position: relative;
+  }
+  .seal-heart::before, .seal-heart::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+  .seal-heart::before { top: -6px; left: 0; }
+  .seal-heart::after { top: 0; left: 6px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    color: var(--burgundy-dark);
+    font-size: 2rem;
+    font-weight: normal;
+    line-height: 1.25;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 34px;
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    min-height: 54px;
+  }
+
+  button {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 13px 32px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  #oui, #non {
+    background: var(--burgundy);
+    color: var(--paper);
+    border: 1px solid var(--burgundy);
+    box-shadow: 0 6px 16px rgba(140,31,59,0.3);
+  }
+  #oui:hover, #non:hover { background: var(--burgundy-dark); transform: translateY(-1px); }
+
+  .fleeing {
+    position: fixed;
+    z-index: 50;
+    transition: top 0.25s ease, left 0.25s ease, transform 0.2s ease;
+  }
+  #non.hidden-btn {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.2);
+  }
+
+  .taunt {
+    margin-top: 20px;
+    min-height: 20px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.88rem;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(43,27,31,0.6);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+  .overlay.show { display: flex; }
+
+  .contract, .confirmation {
+    background: var(--paper);
+    border: 1px solid rgba(140,31,59,0.14);
+    border-radius: 4px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    padding: 40px 40px 34px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 84vh;
+    overflow-y: auto;
+    animation: settle 0.4s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .contract h2, .confirmation h2 {
+    font-family: var(--font-display);
+    color: var(--burgundy-dark);
+    font-weight: normal;
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .contract-intro {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    margin: 0 0 22px;
+  }
+
+  .clauses {
+    list-style: none;
+    margin: 0 0 26px;
+    padding: 0;
+    border-top: 1px solid var(--paper-deep);
+  }
+
+  .clause label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--paper-deep);
+    cursor: pointer;
+  }
+
+  .clause input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .box {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--burgundy);
+    border-radius: 2px;
+    flex: 0 0 18px;
+    margin-top: 2px;
+    position: relative;
+    transition: background 0.15s ease;
+  }
+  .clause input:checked + .box { background: var(--burgundy); }
+  .clause input:checked + .box::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--paper);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .clause input:focus-visible + .box {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+    flex: 0 0 auto;
+  }
+
+  .text {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .validate, .replay {
+    width: 100%;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
+    border: none;
+    padding: 14px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: not-allowed;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+
+  .validate:not(:disabled) {
+    background: var(--burgundy);
+    color: var(--paper);
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(140,31,59,0.3);
+  }
+  .validate:not(:disabled):hover { background: var(--burgundy-dark); transform: translateY(-1px); }
+
+  .replay {
+    background: var(--burgundy);
+    color: var(--paper);
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .replay:hover { background: var(--burgundy-dark); }
+
+  #confirmText {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 22px;
+  }
+
+  .confetti-piece {
+    position: fixed;
+    top: -10px;
+    z-index: 99;
+    pointer-events: none;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(110vh) rotate(500deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mini-heart, .card, .contract, .confirmation, .confetti-piece { animation: none !important; }
+    button, .validate { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts-bg" id="heartsBg"></div>
+
+<div class="stage">
+  <div class="card">
+    <div class="seal"><div class="seal-heart"></div></div>
+    <p class="eyebrow">Une question</p>
+    <h1>Veux-tu devenir ma petite copine ?</h1>
+    <p class="subtitle">Deux options s'offrent à toi. Fait le bon choix ....</p>
+    <div class="btn-row">
+      <button id="oui" type="button">Oui</button>
+      <button id="non" type="button">Non</button>
+    </div>
+    <p class="taunt" id="taunt" aria-live="polite"></p>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Engagement">
+  <div class="contract" id="contractStage">
+    <p class="eyebrow">Avant de continuer</p>
+    <h2>Quelques clauses à valider</h2>
+    <p class="contract-intro">Coche chaque clause pour confirmer ton engagement. Toutes sont obligatoires.</p>
+    <ul class="clauses" id="clauses"></ul>
+    <button class="validate" id="validateBtn" disabled>Valider l'engagement</button>
+  </div>
+  <div class="confirmation" id="confirmStage" hidden>
+    <p class="eyebrow">C'est officiel</p>
+    <h2>Engagement enregistré.</h2>
+    <p id="confirmText"></p>
+    <button class="replay" id="replayBtn" type="button">Recommencer</button>
+  </div>
+</div>
+
+<script>
+  const heartsBg = document.getElementById('heartsBg');
+  const heartColors = ['#D98A97', '#B4893F', '#8C1F3B'];
+  for (let i = 0; i < 16; i++) {
+    const h = document.createElement('div');
+    h.className = 'mini-heart';
+    h.style.background = heartColors[Math.floor(Math.random() * heartColors.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.animationDuration = (9 + Math.random() * 12) + 's';
+    h.style.animationDelay = (Math.random() * 12) + 's';
+    const scale = 0.7 + Math.random() * 1.6;
+    h.style.transform = 'rotate(-45deg) scale(' + scale + ')';
+    heartsBg.appendChild(h);
+  }
+
+  const nonBtn = document.getElementById('non');
+  const ouiBtn = document.getElementById('oui');
+  const taunt = document.getElementById('taunt');
+  const overlay = document.getElementById('overlay');
+  const contractStage = document.getElementById('contractStage');
+  const confirmStage = document.getElementById('confirmStage');
+  const confirmText = document.getElementById('confirmText');
+  const clausesList = document.getElementById('clauses');
+  const validateBtn = document.getElementById('validateBtn');
+  const replayBtn = document.getElementById('replayBtn');
+
+  const taunts = [
+    "Trop lent.",
+    "Presque, mais.... non.",
+    "Il n'aime pas qu'on le touche.",
+    "Il a peur de l'engagement.",
+    "Tu ne l'auras pas comme ça...",
+    "Réessaie, ça ne changera peut être quelque chose.",
+    "Plus tu insistes, plus il fuit...",
+    "Ce bouton est un ninja.",
+    "Prout"
+  ];
+
+  let hoverCount = 0;
+  let isBusy = false;
+
+  function randomTaunt() {
+    taunt.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+  }
+
+  function clampPosition(x, y, w, h) {
+    const margin = 12;
+    const maxX = window.innerWidth - w - margin;
+    const maxY = window.innerHeight - h - margin;
+    return {
+      x: Math.min(Math.max(margin, x), Math.max(margin, maxX)),
+      y: Math.min(Math.max(margin, y), Math.max(margin, maxY))
+    };
+  }
+
+  function teleportNon() {
+    isBusy = true;
+    const w = nonBtn.offsetWidth || 110;
+    const h = nonBtn.offsetHeight || 50;
+    const pos = clampPosition(Math.random() * window.innerWidth, Math.random() * window.innerHeight, w, h);
+    nonBtn.classList.add('fleeing');
+    nonBtn.style.left = pos.x + 'px';
+    nonBtn.style.top = pos.y + 'px';
+    setTimeout(() => { isBusy = false; }, 280);
+  }
+
+  function swapWithOui() {
+    isBusy = true;
+    const ouiRect = ouiBtn.getBoundingClientRect();
+    const nonRect = nonBtn.getBoundingClientRect();
+    nonBtn.classList.add('fleeing');
+    nonBtn.style.left = ouiRect.left + 'px';
+    nonBtn.style.top = ouiRect.top + 'px';
+    ouiBtn.classList.add('fleeing');
+    ouiBtn.style.left = nonRect.left + 'px';
+    ouiBtn.style.top = nonRect.top + 'px';
+    setTimeout(() => { isBusy = false; }, 280);
+  }
+
+  function vanishThenReappear() {
+    isBusy = true;
+    nonBtn.classList.add('hidden-btn');
+    setTimeout(() => {
+      const w = nonBtn.offsetWidth || 110;
+      const h = nonBtn.offsetHeight || 50;
+      const pos = clampPosition(Math.random() * window.innerWidth, Math.random() * window.innerHeight, w, h);
+      nonBtn.classList.add('fleeing');
+      nonBtn.style.left = pos.x + 'px';
+      nonBtn.style.top = pos.y + 'px';
+      nonBtn.classList.remove('hidden-btn');
+      setTimeout(() => { isBusy = false; }, 280);
+    }, 500 + Math.random() * 600);
+  }
+
+  function shrinkThenTeleport() {
+    isBusy = true;
+    const scale = 0.5 + Math.random() * 0.4;
+    nonBtn.style.transform = 'scale(' + scale + ')';
+    setTimeout(() => {
+      nonBtn.style.transform = '';
+      teleportNon();
+    }, 350);
+  }
+
+  function onNonEncounter() {
+    if (isBusy) return;
+    hoverCount++;
+    randomTaunt();
+    if (hoverCount % 3 === 0) {
+      swapWithOui();
+    } else {
+      const behaviors = [teleportNon, vanishThenReappear, shrinkThenTeleport];
+      behaviors[Math.floor(Math.random() * behaviors.length)]();
+    }
+  }
+
+  nonBtn.addEventListener('mouseenter', onNonEncounter);
+  nonBtn.addEventListener('touchstart', function (e) { e.preventDefault(); onNonEncounter(); }, { passive: false });
+  nonBtn.addEventListener('click', function (e) { e.preventDefault(); onNonEncounter(); });
+
+  window.addEventListener('resize', () => {
+    if (nonBtn.classList.contains('fleeing') && !nonBtn.classList.contains('hidden-btn')) teleportNon();
+  });
+
+  const clauses = [
+    "Je m'engage à le respecter, surtout quand il est con.",
+    "Je m'engage à rire de ses blagues, même les mauvaises.",
+    "Je m'engage à lui faire 1 massage par mois minimum.",
+    "Je m'engage à regarder ses séries/anime jusqu'au bout, sans me plaindre.",
+    "Je m'engage à m'excuser en premiere, même quand ce n'est pas ma faute et que t'as raison.",
+    "Je m'engage à le draguer tous les jours.",
+    "Je m'engage à réécrire la Kamasutra avec lui."
+  ];
+
+  clauses.forEach((text, i) => {
+    const li = document.createElement('li');
+    li.className = 'clause';
+    const num = String(i + 1).padStart(2, '0');
+    li.innerHTML =
+      '<label>' +
+      '<input type="checkbox" class="clause-check">' +
+      '<span class="box" aria-hidden="true"></span>' +
+      '<span class="num">' + num + '</span>' +
+      '<span class="text">' + text + '</span>' +
+      '</label>';
+    clausesList.appendChild(li);
+  });
+
+  const clauseChecks = document.querySelectorAll('.clause-check');
+  clauseChecks.forEach(c => c.addEventListener('change', () => {
+    validateBtn.disabled = !Array.from(clauseChecks).every(x => x.checked);
+  }));
+
+  const confirmMessages = [
+    "Les clauses sont signées. La relation entre en vigueur immédiatement.",
+    "Engagement validé sur toute la ligne. Bienvenue officiellement dans le couple.",
+    "Toutes les clauses cochées, aucune échappatoire légale possible désormais.",
+    "Dossier complet, engagement irrévocable. Félicitations à vous deux."
+  ];
+
+  ouiBtn.addEventListener('click', () => {
+    overlay.classList.add('show');
+  });
+
+  validateBtn.addEventListener('click', () => {
+    contractStage.hidden = true;
+    confirmStage.hidden = false;
+    confirmText.textContent = confirmMessages[Math.floor(Math.random() * confirmMessages.length)];
+    launchConfetti();
+  });
+
+  replayBtn.addEventListener('click', () => location.reload());
+
+  function launchConfetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#8C1F3B', '#B4893F', '#D98A97', '#FBF3E7'];
+    for (let i = 0; i < 70; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = 6 + Math.random() * 7;
+      piece.style.width = size + 'px';
+      piece.style.height = size * 0.6 + 'px';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+</script>
+
+</body>
+</html>
